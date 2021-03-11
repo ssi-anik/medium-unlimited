@@ -1,39 +1,42 @@
 import {getTwitterReferer} from './utils';
-import urlsList from './urls';
+import {urlPatterns} from './url';
 
-export default function intercept() {
-  function onBeforeSendHeaders(details) {
-    if (details.requestHeaders) {
-      let newHeaders = removeHeader(details.requestHeaders, 'referer');
-      newHeaders = addHeader(newHeaders, 'Referer', getTwitterReferer());
+export default function intercept () {
+    function onBeforeSendHeaders (details) {
+        if ( details.requestHeaders ) {
+            let headers = removeHeader(details.requestHeaders, 'referer');
+            headers = addHeader(headers, 'Referer', getTwitterReferer());
 
-      return {requestHeaders: newHeaders};
+            return {requestHeaders: headers};
+        }
+
+        return {requestHeaders: details.requestHeaders};
     }
-    return {requestHeaders: details.requestHeaders};
-  }
 
-  chrome.webRequest.onBeforeSendHeaders.addListener(
-    onBeforeSendHeaders,
-    {
-      urls: urlsList,
-    },
-    getBeforeSendExtraInfoSpec()
-  );
+    function getBeforeSendExtraInfoSpec () {
+        const extraInfoSpec = [
+            'blocking',
+            'requestHeaders'
+        ];
 
-  function getBeforeSendExtraInfoSpec() {
-    const extraInfoSpec = ['blocking', 'requestHeaders'];
-    if (chrome.webRequest.OnBeforeSendHeadersOptions.hasOwnProperty('EXTRA_HEADERS')) {
-      extraInfoSpec.push('extraHeaders');
+        if ( chrome.webRequest.OnBeforeSendHeadersOptions.hasOwnProperty('EXTRA_HEADERS') ) {
+            extraInfoSpec.push('extraHeaders');
+        }
+
+        return extraInfoSpec;
     }
-    return extraInfoSpec
-  }
 
-  function removeHeader(headers, headerToRemove) {
-    return headers.filter(({name}) => name.toLowerCase() != headerToRemove);
-  }
+    function removeHeader (headers, headerToRemove) {
+        return headers.filter(({name}) => name.toLowerCase() !== headerToRemove);
+    }
 
-  function addHeader(headers, name, value) {
-   headers.push({name, value});
-    return headers;
-  }
+    function addHeader (headers, name, value) {
+        headers.push({name, value});
+
+        return headers;
+    }
+
+    chrome.webRequest.onBeforeSendHeaders.addListener(onBeforeSendHeaders, {
+        urls: urlPatterns,
+    }, getBeforeSendExtraInfoSpec());
 }

@@ -1,48 +1,110 @@
-import config from './config';
-import {setUserId, getUserId} from './storage';
-import {track} from './analytics';
-import {MEMBERSHIP_PROMPT_CLASSNAME} from './constants';
+export const CONFIGURATION = {
+    version: '2.0.0',
+    remote_config: 'https://ssi-anik.github.io/medium-unlimited/configuration.json',
+    resolver_key: 'remote_resolver',
+    redirection_key: 'redirect-to',
+    resolver_url: '',
+};
 
-export function log(...messages) {
-  if (process.env.NODE_ENV === 'production') {
-    return;
-  }
-  console.log(...messages);
+export function log (...messages) {
+    if ( process.env.NODE_ENV === 'production' ) {
+        return;
+    }
+
+    console.log(...messages);
 }
 
-export function amplitudeApiKey() {
-  if (process.env.NODE_ENV === 'production') {
-    return config.amplitude.api_key;
-  }
-  return 'test_api_key';
+export function getTwitterReferer () {
+    return `https://t.co/${Math.random().toString(36).slice(2)}`;
 }
 
-export function urlWithoutQueryParams(url) {
-  if (!url) {
-    return '';
-  }
-  return url.split('?')[0];
+export function guessIfAnArticle (url) {
+    const slug = new URL(url).pathname.split('/').pop();
+
+    return slug.length > 0 && slug.split('-').length > 2;
 }
 
-function hasMembershipPromptNew(document) {
-  const article = document.getElementsByTagName('article')[0];
-  if (!article) {
-    return false;
-  }
-  const computedStyles = (document.defaultView || window).getComputedStyle(article.nextSibling);
-  if (!computedStyles.background) {
-    return false;
-  }
-  return computedStyles.background.indexOf('linear-gradient') > -1;
+export function notification (message, title = 'Medium unlimited') {
+    const notification = {
+        type: 'basic', iconUrl: 'static/logo.png', title, message
+    };
+
+    chrome.notifications.create('medium-unlimited', notification);
 }
 
-export function hasMembershipPrompt(document) {
-  return (
-    document.getElementsByClassName(MEMBERSHIP_PROMPT_CLASSNAME).length > 0 ||
-    hasMembershipPromptNew(document)
-  );
+export function passMessage (key, value, callback = null) {
+    chrome.tabs.query({active: true, lastFocusedWindow: true,}, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {[key]: value}, callback);
+    });
 }
 
-export function getTwitterReferer() {
-  return `https://t.co/${Math.random().toString(36).slice(2)}`;
+export function registerInstallationCallback () {
+    chrome.runtime.onInstalled.addListener(() => {
+        fetch(CONFIGURATION.remote_config).then(checkIfResponseIsParsable).then(parseUpstreamConfiguration).catch(e => {
+            let message = e.toString();
+            if ( e instanceof TypeError ) {
+                message = e.message;
+            }
+
+            notification(message, 'Remote configuration error');
+        });
+    });
+}
+
+export function fetchPageContent (url) {
+    // url = `https://medium.com/m/global-identity?redirectUrl=${encodeURIComponent(url)}`;
+    const articleWithoutScheme = url.replace(/https?:\/\//, '');
+    passMessage(CONFIGURATION.redirection_key, `${CONFIGURATION.resolver_url}/${articleWithoutScheme}`);
+}
+
+export function isUpdateAvailable (upstream) {
+    return upstream.localeCompare(CONFIGURATION.version, undefined, {numeric: true, sensitivity: 'base'});
+}
+
+export function loadConfiguration () {
+    console.log('Loading configuration');
+    // load remote resolver if not loaded.
+    if ( CONFIGURATION.resolver_url.length === 0 ) {
+        chrome.storage.local.get([CONFIGURATION.resolver_key], function (conf) {
+            CONFIGURATION.resolver_url = conf[CONFIGURATION.resolver_key];
+        })
+    }
+}
+
+export function redirectToUrl (url) {
+    console.log('redirecting article to: ' + url);
+    window.open(url);
+}
+
+function checkIfResponseIsParsable (response) {
+    if ( false === response.ok ) {
+        return Promise.reject('Cannot fetch required configuration');
+    }
+
+    return response.text();
+}
+
+function parseUpstreamConfiguration (config) {
+    config = JSON.parse(config);
+
+    const upstreamVersion = config.latest;
+
+    switch ( isUpdateAvailable(upstreamVersion) ) {
+        case 0:
+            notification('You\'re using the latest version.');
+            break;
+        case 1:
+        default:
+            notification('There is an update available.');
+            break;
+    }
+
+    const updatedConfiguration = {
+        [CONFIGURATION.resolver_key]: config.remote_resolver
+    }
+    chrome.storage.local.remove(Object.keys(updatedConfiguration), function () {
+        chrome.storage.local.set(updatedConfiguration, function () {
+            loadConfiguration();
+        });
+    });
 }
