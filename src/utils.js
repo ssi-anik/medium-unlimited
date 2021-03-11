@@ -14,6 +14,10 @@ export function log (...messages) {
     console.log(...messages);
 }
 
+export function browserNamespace () {
+    return window.msBrowser || window.browser || window.chrome;
+}
+
 export function getTwitterReferer () {
     return `https://t.co/${Math.random().toString(36).slice(2)}`;
 }
@@ -29,17 +33,17 @@ export function notification (message, title = 'Medium unlimited') {
         type: 'basic', iconUrl: 'static/logo.png', title, message
     };
 
-    chrome.notifications.create('medium-unlimited', notification);
+    browserNamespace().notifications.create('medium-unlimited', notification);
 }
 
 export function passMessage (key, value, callback = null) {
-    chrome.tabs.query({active: true, lastFocusedWindow: true,}, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {[key]: value}, callback);
+    browserNamespace().tabs.query({active: true, lastFocusedWindow: true,}, function (tabs) {
+        browserNamespace().tabs.sendMessage(tabs[0].id, {[key]: value}, callback);
     });
 }
 
 export function registerInstallationCallback () {
-    chrome.runtime.onInstalled.addListener(() => {
+    browserNamespace().runtime.onInstalled.addListener(() => {
         fetch(CONFIGURATION.remote_config).then(checkIfResponseIsParsable).then(parseUpstreamConfiguration).catch(e => {
             let message = e.toString();
             if ( e instanceof TypeError ) {
@@ -70,7 +74,7 @@ export function loadConfiguration () {
     console.log('Loading configuration');
     // load remote resolver if not loaded.
     if ( CONFIGURATION.resolver_url.length === 0 ) {
-        chrome.storage.local.get([CONFIGURATION.resolver_key], function (conf) {
+        browserNamespace().storage.local.get([CONFIGURATION.resolver_key], function (conf) {
             CONFIGURATION.resolver_url = conf[CONFIGURATION.resolver_key];
         })
     }
@@ -107,8 +111,8 @@ function parseUpstreamConfiguration (config) {
     const updatedConfiguration = {
         [CONFIGURATION.resolver_key]: config.remote_resolver || '',
     }
-    chrome.storage.local.remove(Object.keys(updatedConfiguration), function () {
-        chrome.storage.local.set(updatedConfiguration, function () {
+    browserNamespace().storage.local.remove(Object.keys(updatedConfiguration), function () {
+        browserNamespace().storage.local.set(updatedConfiguration, function () {
             loadConfiguration();
         });
     });

@@ -4,7 +4,7 @@ import {loadConfiguration, registerInstallationCallback} from "./utils"; //Impor
 
 registerInstallationCallback();
 
-loadConfiguration();
+setTimeout(loadConfiguration, 5000);
 
 intercept();
 

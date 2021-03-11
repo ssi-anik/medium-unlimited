@@ -1,4 +1,4 @@
-import {getTwitterReferer} from './utils';
+import {browserNamespace, getTwitterReferer} from './utils';
 import {urlPatterns} from './url';
 
 export default function intercept () {
@@ -19,7 +19,7 @@ export default function intercept () {
             'requestHeaders'
         ];
 
-        if ( chrome.webRequest.OnBeforeSendHeadersOptions.hasOwnProperty('EXTRA_HEADERS') ) {
+        if ( browserNamespace().webRequest.OnBeforeSendHeadersOptions.hasOwnProperty('EXTRA_HEADERS') ) {
             extraInfoSpec.push('extraHeaders');
         }
 
@@ -36,7 +36,7 @@ export default function intercept () {
         return headers;
     }
 
-    chrome.webRequest.onBeforeSendHeaders.addListener(onBeforeSendHeaders, {
+    browserNamespace().webRequest.onBeforeSendHeaders.addListener(onBeforeSendHeaders, {
         urls: urlPatterns,
     }, getBeforeSendExtraInfoSpec());
 }

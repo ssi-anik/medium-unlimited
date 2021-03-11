@@ -1,24 +1,24 @@
 import {urlPatterns} from "./url";
-import {fetchPageContent, guessIfAnArticle, notification} from "./utils";
+import {browserNamespace, fetchPageContent, guessIfAnArticle, notification} from "./utils";
 
 export default function () {
     function contextMenuClickHandler () {
-        chrome.tabs.query({
+        browserNamespace().tabs.query({
             active: true, lastFocusedWindow: true,
         }, (tabs) => {
             let url = tabs[0].url;
             if ( !guessIfAnArticle(url) ) {
-                notification(`The ${url} doesn't seem like an article.`, 'This is not an article');
+                notification(`The link ${url} doesn't seem like an article page.`, 'This is not an article');
                 return;
             }
 
-            notification(`Current page will be fetched anonymously. [${url}]`, 'Read article anonymously');
+            notification(`The link will be unlocked in a new tab. [${url}]`, 'Unlocking the article');
             fetchPageContent(url);
         });
     }
 
-    chrome.contextMenus.create({
-        title: "Read article anonymously",
+    browserNamespace().contextMenus.create({
+        title: "Unlock this article",
         contexts: ["all"],
         onclick: contextMenuClickHandler,
         documentUrlPatterns: urlPatterns,
