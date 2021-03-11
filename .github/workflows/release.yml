@@ -1,7 +1,7 @@
 on:
   push:
-    branches:
-      - master
+    tags:
+      - "v*"
 
 name: Release asset workflow
 
@@ -39,8 +39,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: build-${{ github.run_number }}
-          release_name: Build-${{ github.run_number }}
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
           draft: false
           prerelease: false
       
