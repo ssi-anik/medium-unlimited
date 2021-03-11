@@ -24,20 +24,31 @@ Code repository for the browser extension to unlock the articles behind the medi
 - Download the latest archive
   from [Releases menu](https://github.com/ssi-anik/medium-unlimited/releases/latest/download/medium-unlimited.zip).
 - Extract the archive.
-- From Chrome visit `chrome://extensions`.
-- From Opera visit `opera://extensions`.
-- From Edge visit `edge://extensions`.
-- Find Developer mode button/toggle switch and enable it.
-- Click load unpacked `Load Unpacked`. Then show the path you extracted the archive.
+- From
+    * Chrome visit `chrome://extensions`.
+    * Opera visit `opera://extensions`.
+    * Edge visit `edge://extensions`.
+    * Find Developer mode button/toggle switch and enable it.
+    * Click `Load Unpacked`. Then show the path where you extracted the archive.
+- From
+    * Firefox visit `about:debugging#/runtime/this-firefox`
+    * Click `Load Temporary Add-on`. Then show the path where your extracted the archive.
+
+---
+
+**When using Firefox, if you use the context menu "Unlock this article", you may need to whitelist the website to allow
+to open the link in a new tab**
+
+---
 
 ## Development
 
 Run the following to build the code:
 
 ```shell
-yarn run watch         #For local development
+yarn run watch         # For local development
 #or
-yarn run build         #For production release
+yarn run build         # For production release
 ```
 
 This will generate the bundle and other required files in ./dist directory. Then follow the installation process.
@@ -50,12 +61,15 @@ a new release and non-technical person can be facilitated.
 
 ## Not sure how to add the link?
 
-- Copy the URL. Let's assume the URL is https://example.com. 
+- Copy the URL. Let's assume the URL is https://example.com.
 - If there is any possibility of having a sub-domain then the pattern will be `https://*.example.com/*`
 - If there is no sub-domain available, then the pattern will be `https://example.com/*`.
 
-But the sub-domain pattern should work in all cases.
+The sub-domain pattern should work in all cases.
 
+## Issues
+
+If the context menu's "Unlock this article" does not work, please open an issue.
 
 # Screenshot:
 
