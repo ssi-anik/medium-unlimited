@@ -54,6 +54,11 @@ export function registerInstallationCallback () {
 export function fetchPageContent (url) {
     // url = `https://medium.com/m/global-identity?redirectUrl=${encodeURIComponent(url)}`;
     const articleWithoutScheme = url.replace(/https?:\/\//, '');
+    if ( CONFIGURATION.resolver_url.length === 0 ) {
+        notification('Empty resolver URL in configuration. Reload the extension. Otherwise, create an issue.');
+        return;
+    }
+
     passMessage(CONFIGURATION.redirection_key, `${CONFIGURATION.resolver_url}/${articleWithoutScheme}`);
 }
 
@@ -87,7 +92,7 @@ function checkIfResponseIsParsable (response) {
 function parseUpstreamConfiguration (config) {
     config = JSON.parse(config);
 
-    const upstreamVersion = config.latest;
+    const upstreamVersion = config.latest || '0.0.0';
 
     switch ( isUpdateAvailable(upstreamVersion) ) {
         case 0:
@@ -100,7 +105,7 @@ function parseUpstreamConfiguration (config) {
     }
 
     const updatedConfiguration = {
-        [CONFIGURATION.resolver_key]: config.remote_resolver
+        [CONFIGURATION.resolver_key]: config.remote_resolver || '',
     }
     chrome.storage.local.remove(Object.keys(updatedConfiguration), function () {
         chrome.storage.local.set(updatedConfiguration, function () {
