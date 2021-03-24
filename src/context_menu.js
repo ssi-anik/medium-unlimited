@@ -1,4 +1,4 @@
-import {browserNamespace, CONFIGURATION, fetchPageContent, guessIfAnArticle, notification} from "./utils";
+import {browserNamespace, CONFIGURATION, openArticleInNewTab, guessIfAnArticle, notification} from "./utils";
 
 export default function () {
     function contextMenuClickHandler () {
@@ -12,7 +12,7 @@ export default function () {
             }
 
             notification(`The link will be unlocked in a new tab. [${url}]`, 'Unlocking the article');
-            fetchPageContent(url);
+            openArticleInNewTab(url);
         });
     }
 

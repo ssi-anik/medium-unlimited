@@ -37,7 +37,7 @@ export function passMessage (key, value, callback = null) {
     });
 }
 
-export function fetchPageContent (url) {
+export function openArticleInNewTab (url) {
     // url = `https://medium.com/m/global-identity?redirectUrl=${encodeURIComponent(url)}`;
     const articleWithoutScheme = url.replace(/https?:\/\//, '');
     if ( CONFIGURATION.resolver_url.length === 0 ) {
@@ -45,16 +45,13 @@ export function fetchPageContent (url) {
         return;
     }
 
-    passMessage(CONFIGURATION.redirection_key, `${CONFIGURATION.resolver_url}/${articleWithoutScheme}`);
+    const remoteUrl = `${CONFIGURATION.resolver_url}/${articleWithoutScheme}`
+    console.log(`New tab will open article link: ${remoteUrl}`);
+    chrome.tabs.create({url: remoteUrl, active: true});
 }
 
 export function isUpdateAvailable (upstream) {
     return upstream.localeCompare(CONFIGURATION.version, undefined, {numeric: true, sensitivity: 'base'});
-}
-
-export function redirectToUrl (url) {
-    console.log('redirecting article to: ' + url);
-    window.open(url);
 }
 
 function checkIfResponseIsParsable (response) {

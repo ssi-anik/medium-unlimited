@@ -5,7 +5,7 @@ module.exports = {
         background: [
             'babel-polyfill',
             './src/background.js'
-        ], content_script: './src/content_script.js',
+        ],
     }, output: {
         filename: '[name].bundle.js',
     }, plugins: [
