@@ -26,7 +26,8 @@
         "contextMenus",
         "tabs",
         "storage",
-        "notifications"
+        "notifications",
+        "debugger"
     ],
     "web_accessible_resources": [
         "static/*"

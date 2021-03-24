@@ -14,6 +14,19 @@ export default function () {
         });
     }
 
+    function contextMenuDebugger () {
+        getActiveTab().then(tab => new Promise(resolve => {
+            return resolve(tab.url);
+        })).then(validateIfAnArticlePage).then(url => {
+            console.log('opening in debugger');
+        }).catch(url => {
+            notification(`The link doesn't seem like an article page. ${url}`, 'This is not an article');
+        });
+    }
+
+    /**
+     * Parent context menu
+     */
     browserNamespace().contextMenus.create({
         title: "Unlock this article",
         id: 'medium-unlock-parent-context-menu',
@@ -30,6 +43,19 @@ export default function () {
         contexts: ["all"],
         onclick: contextMenuAnonymous,
     });
+
+    /**
+     * Child context menu - Debugger
+     * Adds only if the debugger is available
+     */
+    if ( browserNamespace().debugger ) {
+        browserNamespace().contextMenus.create({
+            'title': 'With debugger',
+            'parentId': 'medium-unlock-parent-context-menu',
+            contexts: ["all"],
+            onclick: contextMenuDebugger,
+        });
+    }
 
     return Promise.resolve();
 }
