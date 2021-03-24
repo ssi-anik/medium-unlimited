@@ -18,6 +18,7 @@ Code repository for the browser extension to unlock the articles behind the medi
     * Opera
 - As the extension is not distributed through the stores, if you reload the extension from extensions/add-ons page, it
   should show if there is any update available.
+- Without any major release, no need for extension update. Uses remote configuration to fetch URLs when loaded (Requires internet connection).
 
 ## Installation
 
@@ -55,9 +56,13 @@ This will generate the bundle and other required files in ./dist directory. Then
 
 ## Some links are missing
 
-I have already added a bunch of domains. If you think some links should be added, then visit `src/urls.js`, add the URL
+~~I have already added a bunch of domains. If you think some links should be added, then visit `src/urls.js`, add the URL
 pattern to the array in alphabetic order. Submit a PR. And if the PR gets merged and put a tag, it'll automatically add
-a new release and non-technical person can be facilitated.
+a new release and non-technical person can be facilitated.~~
+
+All the URLs are pulled from the remote [configuration file](https://github.com/ssi-anik/medium-unlimited/blob/gh-pages/configuration.json). If you need to add URL, then send a PR to the `gh-pages` branch. And if you're using your fork, then you can add them to the `src/utls.js`'s `CONFIGURATION.url_patterns`. It'll get merged on the browser **restart** or the installation of the extension.
+
+Even if you close the Chrome browser, it keeps processes running in the background. So, you'll need to kill all those processes to let the extension load again from the start as if the PC has just restarted.
 
 ## Not sure how to add the link?
 
