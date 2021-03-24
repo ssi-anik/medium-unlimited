@@ -1,18 +1,13 @@
 export const CONFIGURATION = {
     version: '2.0.0',
-    remote_config: 'https://ssi-anik.github.io/medium-unlimited/configuration.json',
+    remote_config_url: 'https://ssi-anik.github.io/medium-unlimited/configuration.json',
     resolver_key: 'remote_resolver',
     redirection_key: 'redirect-to',
     resolver_url: '',
+    url_patterns: [
+        "https://*.medium.com/*",
+    ],
 };
-
-export function log (...messages) {
-    if ( process.env.NODE_ENV === 'production' ) {
-        return;
-    }
-
-    console.log(...messages);
-}
 
 export function browserNamespace () {
     return window.msBrowser || window.browser || window.chrome;
@@ -42,19 +37,6 @@ export function passMessage (key, value, callback = null) {
     });
 }
 
-export function registerInstallationCallback () {
-    browserNamespace().runtime.onInstalled.addListener(() => {
-        fetch(CONFIGURATION.remote_config).then(checkIfResponseIsParsable).then(parseUpstreamConfiguration).catch(e => {
-            let message = e.toString();
-            if ( e instanceof TypeError ) {
-                message = e.message;
-            }
-
-            notification(message, 'Remote configuration error');
-        });
-    });
-}
-
 export function fetchPageContent (url) {
     // url = `https://medium.com/m/global-identity?redirectUrl=${encodeURIComponent(url)}`;
     const articleWithoutScheme = url.replace(/https?:\/\//, '');
@@ -70,16 +52,6 @@ export function isUpdateAvailable (upstream) {
     return upstream.localeCompare(CONFIGURATION.version, undefined, {numeric: true, sensitivity: 'base'});
 }
 
-export function loadConfiguration () {
-    console.log('Loading configuration');
-    // load remote resolver if not loaded.
-    if ( CONFIGURATION.resolver_url.length === 0 ) {
-        browserNamespace().storage.local.get([CONFIGURATION.resolver_key], function (conf) {
-            CONFIGURATION.resolver_url = conf[CONFIGURATION.resolver_key];
-        })
-    }
-}
-
 export function redirectToUrl (url) {
     console.log('redirecting article to: ' + url);
     window.open(url);
@@ -87,33 +59,46 @@ export function redirectToUrl (url) {
 
 function checkIfResponseIsParsable (response) {
     if ( false === response.ok ) {
-        return Promise.reject('Cannot fetch required configuration');
+        console.log('error', response);
+        return Promise.reject('Are you connected to the internet? Connect to the internet and reload extension again.');
     }
 
     return response.text();
 }
 
-function parseUpstreamConfiguration (config) {
-    config = JSON.parse(config);
-
-    const upstreamVersion = config.latest || '0.0.0';
+export function mergeLocalConfigWithUpstream (config) {
+    const {latest: upstreamVersion, remote_resolver, url_patterns} = config;
 
     switch ( isUpdateAvailable(upstreamVersion) ) {
-        case 0:
-            notification('You\'re using the latest version.');
-            break;
         case 1:
-        default:
+            // this is downgraded version, remote has the updated version
             notification('There is an update available.');
+            break;
+        case 0:
+        // this is the latest version
+        case -1:
+            // remote has the downgraded version, this is the updated version
             break;
     }
 
-    const updatedConfiguration = {
-        [CONFIGURATION.resolver_key]: config.remote_resolver || '',
-    }
-    browserNamespace().storage.local.remove(Object.keys(updatedConfiguration), function () {
-        browserNamespace().storage.local.set(updatedConfiguration, function () {
-            loadConfiguration();
-        });
+    CONFIGURATION.resolver_url = remote_resolver;
+    CONFIGURATION.url_patterns = [...new Set(CONFIGURATION.url_patterns.concat(url_patterns))];
+
+    return Promise.resolve();
+}
+
+export function registerInstallationCallback () {
+    browserNamespace().runtime.onInstalled.addListener(() => {
+        notification(`You're using the version ${CONFIGURATION.version}`, 'Installation Success');
+    });
+
+    return Promise.resolve();
+}
+
+export function fetchRemoteConfiguration () {
+    return fetch(CONFIGURATION.remote_config_url).then(checkIfResponseIsParsable).then(response => {
+        const config = JSON.parse(response);
+
+        return Promise.resolve(config);
     });
 }

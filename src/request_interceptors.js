@@ -1,7 +1,6 @@
-import {browserNamespace, getTwitterReferer} from './utils';
-import {urlPatterns} from './url';
+import {browserNamespace, CONFIGURATION, getTwitterReferer} from './utils';
 
-export default function intercept () {
+export default function () {
     function onBeforeSendHeaders (details) {
         if ( details.requestHeaders ) {
             let headers = removeHeader(details.requestHeaders, 'referer');
@@ -37,6 +36,8 @@ export default function intercept () {
     }
 
     browserNamespace().webRequest.onBeforeSendHeaders.addListener(onBeforeSendHeaders, {
-        urls: urlPatterns,
+        urls: CONFIGURATION.url_patterns,
     }, getBeforeSendExtraInfoSpec());
+
+    return Promise.resolve();
 }

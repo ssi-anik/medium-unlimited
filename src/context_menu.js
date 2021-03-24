@@ -1,5 +1,4 @@
-import {urlPatterns} from "./url";
-import {browserNamespace, fetchPageContent, guessIfAnArticle, notification} from "./utils";
+import {browserNamespace, CONFIGURATION, fetchPageContent, guessIfAnArticle, notification} from "./utils";
 
 export default function () {
     function contextMenuClickHandler () {
@@ -8,7 +7,7 @@ export default function () {
         }, (tabs) => {
             let url = tabs[0].url;
             if ( !guessIfAnArticle(url) ) {
-                notification(`The link ${url} doesn't seem like an article page.`, 'This is not an article');
+                notification(`The link doesn't seem like an article page. ${url}`, 'This is not an article');
                 return;
             }
 
@@ -21,6 +20,8 @@ export default function () {
         title: "Unlock this article",
         contexts: ["all"],
         onclick: contextMenuClickHandler,
-        documentUrlPatterns: urlPatterns,
+        documentUrlPatterns: CONFIGURATION.url_patterns,
     });
+
+    return Promise.resolve();
 }

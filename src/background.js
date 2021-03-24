@@ -1,11 +1,19 @@
-import intercept from './request_interceptors';
-import context_menu from "./context_menu";
-import {loadConfiguration, registerInstallationCallback} from "./utils"; //Importing just to make sure the interceptors are registered.
+import registerRequestInterceptor from './request_interceptors';
+import registerContextMenu from "./context_menu";
+import {
+    fetchRemoteConfiguration, mergeLocalConfigWithUpstream, notification, registerInstallationCallback
+} from "./utils";
 
-registerInstallationCallback();
+registerInstallationCallback()
+    .then(fetchRemoteConfiguration)
+    .then(mergeLocalConfigWithUpstream)
+    .then(registerContextMenu)
+    .then(registerRequestInterceptor)
+    .catch(e => {
+        let message = e.toString();
+        if ( e instanceof TypeError ) {
+            message = e.message;
+        }
 
-setTimeout(loadConfiguration, 5000);
-
-intercept();
-
-context_menu();
+        notification(message, 'Error!');
+    });
