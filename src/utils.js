@@ -17,10 +17,16 @@ export function getTwitterReferer () {
     return `https://t.co/${Math.random().toString(36).slice(2)}`;
 }
 
-export function guessIfAnArticle (url) {
-    const slug = new URL(url).pathname.split('/').pop();
+export function validateIfAnArticlePage (url) {
+    return new Promise((resolve, reject) => {
+        const slug = new URL(url).pathname.split('/').pop();
 
-    return slug.length > 0 && slug.split('-').length > 2;
+        if ( slug.length > 0 && slug.split('-').length > 2 ) {
+            return resolve(url);
+        } else {
+            return reject(url)
+        }
+    });
 }
 
 export function notification (message, title = 'Medium unlimited') {
