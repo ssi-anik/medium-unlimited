@@ -1,11 +1,11 @@
-import {browserNamespace, CONFIGURATION, openArticleInNewTab, guessIfAnArticle, notification} from "./utils";
+import {
+    browserNamespace, CONFIGURATION, getActiveTab, guessIfAnArticle, notification, openArticleInNewTab
+} from "./utils";
 
 export default function () {
     function contextMenuClickHandler () {
-        browserNamespace().tabs.query({
-            active: true, lastFocusedWindow: true,
-        }, (tabs) => {
-            let url = tabs[0].url;
+        getActiveTab().then(tab => {
+            let url = tab.url;
             if ( !guessIfAnArticle(url) ) {
                 notification(`The link doesn't seem like an article page. ${url}`, 'This is not an article');
                 return;

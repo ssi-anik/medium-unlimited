@@ -99,3 +99,13 @@ export function fetchRemoteConfiguration () {
         return Promise.resolve(config);
     });
 }
+
+export function getActiveTab () {
+    return new Promise((resolve, reject) => {
+        browserNamespace().tabs.query({
+            active: true, lastFocusedWindow: true,
+        }, (tabs) => {
+            return resolve(tabs[0]);
+        })
+    });
+}
