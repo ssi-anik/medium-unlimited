@@ -21,9 +21,6 @@ jobs:
       - name: Get the short tag
         id: tag
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      
-      - name: Install jq
-        run: sudo apt-get install -y jq
 
       - name: Replace the version number in manifest.json
         run: cat manifest.json | jq ".version |= \"${{ steps.tag.outputs.VERSION }}\"" --indent 4 | tee manifest.json
