@@ -22,8 +22,12 @@ jobs:
         id: tag
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
+      - name: Get numeric tag
+        id: numeric
+        run: echo ::set-output name=VERSION::`git tag | grep -E '^v[0-9]' | sort -V | tail -1 | sed 's/v\(.*\)/\1/'`
+
       - name: Replace the version number in manifest.json
-        run: cat manifest.json | jq ".version |= \"${{ steps.tag.outputs.VERSION }}\"" --indent 4 | tee manifest.json
+        run: cat manifest.json | jq ".version |= \"${{ steps.numeric.outputs.VERSION }}\"" --indent 4 | tee manifest.json
 
       - name: Install yarn
         run: npm install -g yarn
