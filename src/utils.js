@@ -1,5 +1,5 @@
 export const CONFIGURATION = {
-    version: '2.0.1',
+    version: '2.0.2',
     remote_config_url: 'https://ssi-anik.github.io/medium-unlimited/configuration.json',
     resolver_key: 'remote_resolver',
     redirection_key: 'redirect-to',

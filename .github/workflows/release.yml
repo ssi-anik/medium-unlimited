@@ -21,7 +21,17 @@ jobs:
       - name: Get the short tag
         id: tag
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      
+
+      - name: Get numeric tag
+        id: numeric
+        # Latest tag: https://gist.github.com/rponte/fdc0724dd984088606b0
+        # Extract numeric version number: https://stackoverflow.com/a/7522914/2190689
+        # Command substitution: https://stackoverflow.com/a/2657023/2190689
+        run: echo ::set-output name=VERSION::$(git describe --tags $(git rev-list --tags --max-count=1) | sed 's/v\(.*\)/\1/')
+
+      - name: Replace the version number in manifest.json
+        run: cat manifest.json | jq ".version |= \"${{ steps.numeric.outputs.VERSION }}\"" --indent 4 | tee manifest.json
+
       - name: Install yarn
         run: npm install -g yarn
       
