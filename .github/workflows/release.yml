@@ -22,6 +22,11 @@ jobs:
         id: tag
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       
+      - name: Replace the version number in manifest.json
+        run: |
+          apt-get install -y jq
+          cat manifest.json | jq ".version |= \"${{ steps.tag.outputs.VERSION }}\"" --indent 4 | tee manifest.json
+
       - name: Install yarn
         run: npm install -g yarn
       
