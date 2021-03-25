@@ -24,7 +24,7 @@ jobs:
       
       - name: Replace the version number in manifest.json
         run: |
-          apt-get install -y jq
+          sudo apt-get install -y jq
           cat manifest.json | jq ".version |= \"${{ steps.tag.outputs.VERSION }}\"" --indent 4 | tee manifest.json
 
       - name: Install yarn
