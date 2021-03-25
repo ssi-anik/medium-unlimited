@@ -1,12 +1,10 @@
 import {
-    browserNamespace, CONFIGURATION, getActiveTab, validateIfAnArticlePage, notification, openArticleInNewTab
+    browserNamespace, CONFIGURATION, getActiveTab, notification, openArticleInNewTab, validateIfAnArticlePage
 } from "./utils";
 
 export default function () {
-    function contextMenuAnonymous () {
-        getActiveTab().then(tab => new Promise(resolve => {
-            return resolve(tab.url);
-        })).then(validateIfAnArticlePage).then(url => {
+    function anonymousContextHandler (info, tab) {
+        validateIfAnArticlePage(tab.url).then(url => {
             notification(`The link will be unlocked in a new tab. [${url}]`, 'Unlocking the article');
             openArticleInNewTab(url);
         }).catch(url => {
@@ -14,10 +12,8 @@ export default function () {
         });
     }
 
-    function contextMenuDebugger () {
-        getActiveTab().then(tab => new Promise(resolve => {
-            return resolve(tab.url);
-        })).then(validateIfAnArticlePage).then(url => {
+    function debuggerContextHandler (info, tab) {
+        validateIfAnArticlePage(tab.url).then(url => {
             console.log('opening in debugger');
         }).catch(url => {
             notification(`The link doesn't seem like an article page. ${url}`, 'This is not an article');
@@ -30,7 +26,7 @@ export default function () {
          */
         browserNamespace().contextMenus.create({
             title: "Unlock this article",
-            id: 'medium-unlock-parent-context-menu',
+            id: 'parent-context-menu',
             contexts: ["all"],
             documentUrlPatterns: CONFIGURATION.url_patterns,
         });
@@ -40,10 +36,10 @@ export default function () {
          */
         browserNamespace().contextMenus.create({
             title: 'Anonymously in new tab',
-            parentId: 'medium-unlock-parent-context-menu',
-            id: 'mu-context-anon',
+            parentId: 'parent-context-menu',
+            id: 'anonymous',
             contexts: ["all"],
-            onclick: contextMenuAnonymous,
+            onclick: anonymousContextHandler,
         });
 
         /**
@@ -53,10 +49,10 @@ export default function () {
         if ( browserNamespace().debugger ) {
             browserNamespace().contextMenus.create({
                 title: 'With debugger',
-                parentId: 'medium-unlock-parent-context-menu',
-                id: 'mu-context-debugger',
+                parentId: 'parent-context-menu',
+                id: 'debugger',
                 contexts: ["all"],
-                onclick: contextMenuDebugger,
+                onclick: debuggerContextHandler,
             });
         }
     }
